@@ -1,7 +1,6 @@
-
 # GRPC-GO-HELLO
 
-Aplicação simples em GRPC feito em Golang.
+Aplicação simples em GRPC feito em Golang. Inicia um server e o client printa uma mensagem fixa.
 
 ## Referências
 
