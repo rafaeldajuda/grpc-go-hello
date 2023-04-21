@@ -14,8 +14,28 @@ Aplicação e o tutorial foram feitos em cima das seguintes referências:
 
 Arquivos `.proto` servem como esquemas para gerar as funções do GRPC. Neles conterão as estruturas, os serviços e as funções dos serviços.
 
-`estruturas`
 (contracts/hello.proto)
+```proto
+syntax = "proto3";
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloResponse {
+    string msg = 1;
+}
+
+option go_package = "./pb";
+
+service HelloService {
+    rpc Hello(HelloRequest) returns (HelloResponse) {};
+}
+```
+
+As estruras são utilizadas para definir como serão as entradas e saídas dos serviços. Nos campos passamos quais tipos as varíáveis são e a ordem que ficarão na estrutura.
+
+`estruturas`
 ```proto
 syntax = "proto3";
 
@@ -30,10 +50,9 @@ message HelloResponse {
 
 **OBS:** o número seguido do tipo (string) e do nome da variável (name ou msg) é a ordem que o campo que vai se encontrar na estrutura.
 
-Dentro dos serviços declaramos as funções que os serviços terão. Nas funções definimos como será a entrada e a sáida da função, porém como a função executará os dados vai ser definido no server.
+Dentro dos serviços declaramos as funções que os serviços terão. Nas funções definimos como será a entrada e a sáida da função, porém, como a função irá executar os dados vai ser definido no server.
 
 `serviço e função`
-(contracts/hello.proto)
 ```proto
 option go_package = "./pb";
 
@@ -42,48 +61,33 @@ service HelloService {
 }
 ```
 
-(contracts/hello.proto)
-```proto
-syntax = "proto3";
-
-message HelloRequest {
-    string name = 1;
-}
-
-message HelloResponse {
-    string msg = 1;
-}
-
-option go_package = "./pb";
-
-service HelloService {
-    rpc Hello(HelloRequest) returns (HelloResponse) {};
-}
-```
+**OBS:** `option go_package` diz ao gerador do compilador onde deve ser gerados os arquivos `.pb`.
 
 ## Protobuf
 
-* Vamos instalar o compilador do Protobuf que irá gerar nosso código. Caso esteja usando Linux, você pode usar o apt ou o apt-get, por exemplo:
+Vamos instalar o compilador do Protobuf que irá gerar nosso código. Caso esteja usando Linux, você pode usar o apt ou o apt-get, por exemplo:
 ```cmd
 apt install -y protobuf-compiler
 protoc --version
 ```
 
-* Após instalar o compilador é preciso instalar os plugins do GO para compilador de protocolo 
+Após instalar o compilador é preciso instalar os plugins do GO para compilador protoc:
 ```cmd
 $ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
 $ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 ```
 
-* Atualize seu PATH para que o compilador protoc possa encontrar os plugins:
-```
+Atualize seu PATH para que o compilador protoc possa encontrar os plugins:
+```cmd
 $ export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
-* Feito isso vamos rodar o seguinte comando para gerar os arquivos `.pb`:
+Feito isso vamos rodar o seguinte comando para gerar os arquivos `.pb`:
 ```cmd
 protoc --go_out=./pb --go_opt=paths=source_relative   --go-grpc_out=./pb --go-grpc_opt=paths=source_relative  contracts/*.proto
 ```
+
+**OBS:** arquivos `.pb` são gerados a partir dos arquivos `.proto`. Eles possuem todas as funções que iremos utilizar para as aplicações de GRPC.
 
 ## Server
 
@@ -150,7 +154,7 @@ Depois iniciamos um server GRPC sem definições de conexão e serviços:
 grpcServer := grpc.NewServer()
 ```
 
-Registramos o serviço no server e como ele passmos uma instância do `Server`. Lembrando que o `Server` possui a estrutura que foi criado pelo `hello.proto`:
+Registramos o serviço no server e passamos uma instância do `Server`. Lembrando que o `Server` possui a estrutura que foi criada pelo `hello.proto`:
 ```golang
 pb.RegisterHelloServiceServer(grpcServer, &Server{})
 ```
@@ -232,7 +236,7 @@ log.Printf("Response: %v", response.Msg)
 
 ## Teste
 
-Para testar é precisa iniciar o Server:
+Para testar é preciso iniciar o Server:
 ```cmd
 go run server/main.go
 ```
